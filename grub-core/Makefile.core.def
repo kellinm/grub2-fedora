@@ -126,6 +126,7 @@ kernel = {
   common = kern/rescue_parser.c;
   common = kern/rescue_reader.c;
   common = kern/term.c;
+  common = term/render_logic.c;
 
   noemu = kern/compiler-rt.c;
   noemu = kern/mm.c;
@@ -1804,6 +1805,7 @@ module = {
   common = normal/context.c;
   common = normal/charset.c;
   common = lib/getline.c;
+  common = term/render_logic.c;
 
   common = script/main.c;
   common = script/script.c;

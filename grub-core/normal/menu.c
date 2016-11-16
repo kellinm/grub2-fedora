@@ -32,6 +32,7 @@
 #include <grub/script_sh.h>
 #include <grub/gfxterm.h>
 #include <grub/dl.h>
+#include <grub/render_logic.h>
 
 /* Time to delay after displaying an error message about a default/fallback
    entry failing to boot.  */
@@ -39,22 +40,6 @@
 
 grub_err_t (*grub_gfxmenu_try_hook) (int entry, grub_menu_t menu,
 				     int nested) = NULL;
-
-enum timeout_style {
-  TIMEOUT_STYLE_MENU,
-  TIMEOUT_STYLE_COUNTDOWN,
-  TIMEOUT_STYLE_HIDDEN
-};
-
-struct timeout_style_name {
-  const char *name;
-  enum timeout_style style;
-} timeout_style_names[] = {
-  {"menu", TIMEOUT_STYLE_MENU},
-  {"countdown", TIMEOUT_STYLE_COUNTDOWN},
-  {"hidden", TIMEOUT_STYLE_HIDDEN},
-  {NULL, 0}
-};
 
 /* Wait until the user pushes any key so that the user
    can see what happened.  */
@@ -99,25 +84,6 @@ get_entry_index_by_hotkey (grub_menu_t menu, int hotkey)
       return i;
 
   return -1;
-}
-
-/* Return the timeout style.  If the variable "timeout_style" is not set or
-   invalid, default to TIMEOUT_STYLE_MENU.  */
-static enum timeout_style
-get_timeout_style (void)
-{
-  const char *val;
-  struct timeout_style_name *style_name;
-
-  val = grub_env_get ("timeout_style");
-  if (!val)
-    return TIMEOUT_STYLE_MENU;
-
-  for (style_name = timeout_style_names; style_name->name; style_name++)
-    if (grub_strcmp (style_name->name, val) == 0)
-      return style_name->style;
-
-  return TIMEOUT_STYLE_MENU;
 }
 
 /* Return the current timeout. If the variable "timeout" is not set or
@@ -610,7 +576,6 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
   grub_uint64_t saved_time;
   int default_entry, current_entry;
   int timeout;
-  enum timeout_style timeout_style;
 
   default_entry = get_entry_number (menu, "default");
 
@@ -627,15 +592,12 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
        useful and likely to be a source of confusion, so we disallow this.  */
     grub_env_unset ("timeout_style");
 
-  timeout_style = get_timeout_style ();
-
-  if (timeout_style == TIMEOUT_STYLE_COUNTDOWN
-      || timeout_style == TIMEOUT_STYLE_HIDDEN)
+  if (!grub_should_render_menu())
     {
       static struct grub_term_coordinate *pos;
       int entry = -1;
 
-      if (timeout_style == TIMEOUT_STYLE_COUNTDOWN && timeout)
+      if (grub_should_render_countdown_only() && timeout)
 	{
 	  pos = grub_term_save_pos ();
 	  print_countdown (pos, timeout);
@@ -664,7 +626,7 @@ run_menu (grub_menu_t menu, int nested, int *auto_boot)
 	  if (timeout > 0 && has_second_elapsed (&saved_time))
 	    {
 	      timeout--;
-	      if (timeout_style == TIMEOUT_STYLE_COUNTDOWN)
+	      if (grub_should_render_countdown_only())
 		print_countdown (pos, timeout);
 	    }
 
