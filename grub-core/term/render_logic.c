@@ -47,10 +47,12 @@ void grub_read_timeout_style_configuration()
   const char *timeout_style_configuration;
   struct timeout_style_name *style_name_ptr;
 
+  grub_printf("Entered grub_read_timeout_style_configuration...\n");
   /* short circuit if this is already done */
   if (chosen_timeout_style != TIMEOUT_STYLE_UNSET)
     return;
 
+  grub_printf("\t- Past the short circuit...\n");
   /* set the default up front */
   chosen_timeout_style = TIMEOUT_STYLE_MENU;
 
@@ -58,6 +60,7 @@ void grub_read_timeout_style_configuration()
   timeout_style_configuration = grub_env_get ("timeout_style");
   if (!timeout_style_configuration)
     return;
+  grub_printf("\t- Found the config file [%s]...\n", timeout_style_configuration);
 
   /* check for user configured timeout style */
   for (style_name_ptr = timeout_style_list; style_name_ptr->name; style_name_ptr++)

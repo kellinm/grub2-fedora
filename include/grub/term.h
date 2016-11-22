@@ -389,13 +389,13 @@ grub_term_setcursor (struct grub_term_output *term, int on)
 static inline void 
 grub_term_cls (struct grub_term_output *term)
 {
-  if (term->cls)
-    (term->cls) (term);
-  else
-    {
+  //if (term->cls)
+  //  (term->cls) (term);
+  //else
+   // {
       grub_putcode ('\n', term);
-      grub_term_refresh (term);
-    }
+      //grub_term_refresh (term);
+   // }
 }
 
 #if HAVE_FONT_SOURCE
